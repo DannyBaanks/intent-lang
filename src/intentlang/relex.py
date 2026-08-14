@@ -28,8 +28,11 @@ def round_trip(intent: Intent, lang: str | None = None) -> str:
         return f"Falta sobre qué. ¿Qué {verbo}?"
 
     if intent.status is Status.AMBIGUOUS:
-        opciones = " o ".join(c.upper() for c in intent.candidates)
-        return f"¿Quisiste decir {opciones}?"
+        if intent.candidates:
+            opciones = " o ".join(c.upper() for c in intent.candidates)
+            return f"¿Quisiste decir {opciones}?"
+        else:
+            return "No pude desambiguar la intención. ¿Podés ser más específico?"
 
     verbo = _otra_palabra(intent.verb, lang, intent.verb.lemma)
     objeto = _otra_palabra(intent.operand, lang, intent.operand.lemma)

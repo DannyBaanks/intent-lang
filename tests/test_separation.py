@@ -27,12 +27,25 @@ def _instalar():
 
 
 def test_separacion_es_perfecta():
-    """INVARIANTE: dos etiquetas distintas nunca comparten key."""
+    """INVARIANTE: dos etiquetas distintas nunca comparten key.
+
+    También valida que el pipeline no regresó totalmente (al menos 2 casos
+    deben resolver a RESOLVED; con 9 casos en el corpus, 2+ indica que
+    el resolve() está funcionando en lo básico).
+    """
     por_key = defaultdict(set)
+    resueltos = 0
     for caso in cargar():
         intent = resolve(caso["text"], caso["lang"])
         if intent.status is Status.RESOLVED:
             por_key[intent.key()].add(caso["label"])
+            resueltos += 1
+
+    # Piso de cobertura: con 9 casos en el corpus, al menos 2 deben resolver
+    assert resueltos >= 2, (
+        f"regresion del pipeline: solo {resueltos} de 9 casos llegaron a RESOLVED. "
+        f"El resolve() parece estar fallando totalmente."
+    )
 
     colisiones = {k: v for k, v in por_key.items() if len(v) > 1}
     assert not colisiones, f"colapso semantico entre intenciones distintas: {colisiones}"
