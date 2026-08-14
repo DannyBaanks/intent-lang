@@ -1,0 +1,16 @@
+{
+  "_comment": "concepto ILI -> primitiva. Escrito a mano a proposito: es la unica pieza donde una persona decide que significa que. Todos los ids fueron VERIFICADOS con el spike de la Tarea 2 contra omw-{es,en,cmn}:1.4. Techo 50 entradas.",
+  "_coverage_note": "i22623 (ADD) NO existe en omw-cmn:1.4. Se probaron 6 lemas chinos y ninguno lo alcanza. Hueco declarado, verificado por test_ADD_declara_su_hueco_en_chino.",
+
+  "i22623": "ADD",
+  "i26584": "REMOVE",
+  "i30886": "MOVE",
+  "i22376": "CHANGE",
+  "i22389": "CHANGE",
+  "i32402": "QUERY",
+  "i32509": "QUERY",
+  "i34510": "RUN",
+  "i30214": "COPY",
+  "i25271": "CONNECT",
+  "i28468": "CONNECT"
+}
