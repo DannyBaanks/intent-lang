@@ -57,6 +57,26 @@ def test_passthrough_del_verbo_se_detecta():
             pass
 
 
+def test_operando_passthrough_cuando_sin_sinonimos():
+    """El operando hace passthrough cuando OMW no tiene sinónimos.
+
+    Para "archivo" (i50132, i71104), ambos sentidos en OMW tienen solo "archivo"
+    como lema en español. Esto es una limitación estructural de la cobertura de OMW,
+    no un error del sistema. _otra_palabra() cae al lemma original por diseño
+    cuando synonyms() devuelve lista con un solo elemento (el lemma actual).
+
+    Este test documenta el passthrough permanente y aceptable. Si algún día OMW
+    agrega sinónimos para "archivo", este test fallará y habrá que actualizar
+    DECLARED_LIMITATIONS (similar a DECLARED_GAPS en Tarea 4).
+    """
+    intent = resolve("copia el archivo", "es")
+    frase = round_trip(intent, "es")
+    # El operando 'archivo' está presente sin cambios: esto es passthrough
+    assert "archivo" in frase, f"El passthrough del operando debe ser visible: {frase!r}"
+    # Pero el verbo SÍ cambió (RECREAR en lugar de COPIAR): la intención se resolvió
+    assert intent.verb.lemma not in frase.lower(), f"El verbo debe tener sinónimo: {frase!r}"
+
+
 def test_puede_devolver_en_otro_idioma():
     intent = resolve("copia el archivo", "es")
     assert round_trip(intent, "en") != round_trip(intent, "es")
