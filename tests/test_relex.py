@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from intentlang import lexicon
-from intentlang.relex import round_trip
+from intentlang.relex import DECLARED_OPERAND_PASSTHROUGH, round_trip
 from intentlang.resolve import resolve
 from intentlang.ir import Intent, Status, Concept, Provenance
 
@@ -65,12 +65,11 @@ def test_operando_passthrough_cuando_sin_sinonimos():
     no un error del sistema. _otra_palabra() cae al lemma original por diseño
     cuando synonyms() devuelve lista con un solo elemento (el lemma actual).
 
-    Este test compara lo MEDIDO (qué operandos hacen passthrough de verdad) contra
-    lo DECLARADO (DECLARED_OPERAND_PASSTHROUGH). Si algún día OMW agrega sinónimos,
-    este test detectará que el passthrough se cerró y habrá que actualizar la declaración.
+    Este test cubre el efecto observable: que el passthrough sea visible en la
+    frase, no silencioso. La verificación de que ese passthrough está declarado
+    (y sólo ese) vive en test_declaracion_de_passthrough_operando_coincide_con_lo_medido,
+    que mide TODAS las entradas declaradas, no sólo la que este resolve() ejercita.
     """
-    from intentlang.relex import DECLARED_OPERAND_PASSTHROUGH
-
     intent = resolve("copia el archivo", "es")
     frase = round_trip(intent, "es")
 
@@ -80,16 +79,51 @@ def test_operando_passthrough_cuando_sin_sinonimos():
     # Pero el verbo SÍ cambió (RECREAR en lugar de COPIAR): la intención se resolvió
     assert intent.verb.lemma not in frase.lower(), f"El verbo debe tener sinónimo: {frase!r}"
 
-    # Verificar que el passthrough está declarado. Si el test falla aquí, significa
-    # que OMW agregó sinónimos y hay que actualizar DECLARED_OPERAND_PASSTHROUGH.
-    assert intent.operand.ili in DECLARED_OPERAND_PASSTHROUGH, (
-        f"passthrough del operando i{intent.operand.ili} no está declarado en "
-        f"DECLARED_OPERAND_PASSTHROUGH. Si OMW agregó sinónimos, actualizar la "
-        f"constante. Si es un operando nuevo, agregarlo a la declaración."
-    )
-    assert "es" in DECLARED_OPERAND_PASSTHROUGH[intent.operand.ili], (
-        f"passthrough del operando i{intent.operand.ili} en español no está declarado"
-    )
+
+def test_declaracion_de_passthrough_operando_coincide_con_lo_medido():
+    """Simétrico con test_cada_concepto_existe_en_los_tres_idiomas (DECLARED_GAPS).
+
+    El dominio medido NO se deriva de las claves de DECLARED_OPERAND_PASSTHROUGH
+    (eso sería circular: borrar una entrada real la sacaría de ambos lados y el
+    test nunca fallaría). Se deriva de forma independiente: los sentidos reales
+    de "archivo" en OMW-es, vía lexicon.senses(). Así:
+
+    - si un sentido declarado deja de ser passthrough (OMW le agrega un sinónimo,
+      o el sentido desaparece), el medido difiere del declarado -> falla.
+    - si aparece un sentido nuevo que hace passthrough y no está declarado,
+      el medido lo incluye y el declarado no -> falla.
+
+    Antes, el único assert de declaración (`intent.operand.ili in
+    DECLARED_OPERAND_PASSTHROUGH`) sólo se ejercitaba con el ILI que devuelve
+    UNA llamada a resolve("copia el archivo", "es"); i71104 nunca se medía.
+    """
+    ilis_archivo = lexicon.senses("archivo", "es", pos="n")
+
+    medido: dict[str, list[str]] = {}
+    for ili in ilis_archivo:
+        alternativas = [s for s in lexicon.synonyms(ili, "es") if s != "archivo"]
+        if not alternativas:
+            medido[ili] = ["es"]
+
+    if medido != DECLARED_OPERAND_PASSTHROUGH:
+        todas_claves = set(DECLARED_OPERAND_PASSTHROUGH) | set(medido)
+        sobra: dict[str, list[str]] = {}  # declarado pero ya no medido: hay que sacarlo
+        falta: dict[str, list[str]] = {}  # medido pero no declarado: hay que agregarlo
+        for k in todas_claves:
+            declarado_v = set(DECLARED_OPERAND_PASSTHROUGH.get(k, []))
+            medido_v = set(medido.get(k, []))
+            solo_declarado = sorted(declarado_v - medido_v)
+            solo_medido = sorted(medido_v - declarado_v)
+            if solo_declarado:
+                sobra[k] = solo_declarado
+            if solo_medido:
+                falta[k] = solo_medido
+        pytest.fail(
+            "DECLARED_OPERAND_PASSTHROUGH desactualizado respecto de lo medido.\n"
+            f"  sobra en la declaración (ya no es passthrough real): {sobra}\n"
+            f"  falta declarar (passthrough medido, no declarado): {falta}\n"
+            f"  medido={medido!r} declarado={DECLARED_OPERAND_PASSTHROUGH!r}"
+        )
 
 
 def test_puede_devolver_en_otro_idioma():
