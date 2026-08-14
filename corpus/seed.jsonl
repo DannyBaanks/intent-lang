@@ -1,0 +1,9 @@
+{"text": "copia el archivo", "lang": "es", "label": "COPY/file"}
+{"text": "duplica el fichero", "lang": "es", "label": "COPY/file"}
+{"text": "copy the file", "lang": "en", "label": "COPY/file"}
+{"text": "复制文件", "lang": "zh", "label": "COPY/file"}
+{"text": "borra el archivo", "lang": "es", "label": "REMOVE/file"}
+{"text": "elimina el fichero", "lang": "es", "label": "REMOVE/file"}
+{"text": "delete the file", "lang": "en", "label": "REMOVE/file"}
+{"text": "mueve el archivo", "lang": "es", "label": "MOVE/file"}
+{"text": "move the file", "lang": "en", "label": "MOVE/file"}
