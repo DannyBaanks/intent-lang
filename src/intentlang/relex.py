@@ -10,6 +10,12 @@ from .ir import Concept, Intent, Status
 from .lexicon import synonyms
 
 
+DECLARED_OPERAND_PASSTHROUGH: dict[str, list[str]] = {
+    "i50132": ["es"],  # archivo: OMW-es:1.4 tiene solo "archivo" como lema
+    "i71104": ["es"],  # archivo (sentido 2): OMW-es:1.4 tiene solo "archivo" como lema
+}
+
+
 def _otra_palabra(concept: Concept, lang: str, evitar: str) -> str:
     if not concept.ili:
         return concept.lemma

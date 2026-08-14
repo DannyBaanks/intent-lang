@@ -65,16 +65,31 @@ def test_operando_passthrough_cuando_sin_sinonimos():
     no un error del sistema. _otra_palabra() cae al lemma original por diseño
     cuando synonyms() devuelve lista con un solo elemento (el lemma actual).
 
-    Este test documenta el passthrough permanente y aceptable. Si algún día OMW
-    agrega sinónimos para "archivo", este test fallará y habrá que actualizar
-    DECLARED_LIMITATIONS (similar a DECLARED_GAPS en Tarea 4).
+    Este test compara lo MEDIDO (qué operandos hacen passthrough de verdad) contra
+    lo DECLARADO (DECLARED_OPERAND_PASSTHROUGH). Si algún día OMW agrega sinónimos,
+    este test detectará que el passthrough se cerró y habrá que actualizar la declaración.
     """
+    from intentlang.relex import DECLARED_OPERAND_PASSTHROUGH
+
     intent = resolve("copia el archivo", "es")
     frase = round_trip(intent, "es")
+
     # El operando 'archivo' está presente sin cambios: esto es passthrough
     assert "archivo" in frase, f"El passthrough del operando debe ser visible: {frase!r}"
+
     # Pero el verbo SÍ cambió (RECREAR en lugar de COPIAR): la intención se resolvió
     assert intent.verb.lemma not in frase.lower(), f"El verbo debe tener sinónimo: {frase!r}"
+
+    # Verificar que el passthrough está declarado. Si el test falla aquí, significa
+    # que OMW agregó sinónimos y hay que actualizar DECLARED_OPERAND_PASSTHROUGH.
+    assert intent.operand.ili in DECLARED_OPERAND_PASSTHROUGH, (
+        f"passthrough del operando i{intent.operand.ili} no está declarado en "
+        f"DECLARED_OPERAND_PASSTHROUGH. Si OMW agregó sinónimos, actualizar la "
+        f"constante. Si es un operando nuevo, agregarlo a la declaración."
+    )
+    assert "es" in DECLARED_OPERAND_PASSTHROUGH[intent.operand.ili], (
+        f"passthrough del operando i{intent.operand.ili} en español no está declarado"
+    )
 
 
 def test_puede_devolver_en_otro_idioma():
