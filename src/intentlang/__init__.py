@@ -13,6 +13,7 @@ from .capabilities import (
     list_capabilities,
     register_capability,
 )
+from .cobol_guard import CobolVerification, verify_cobol_round_trip
 from .codegen import (
     PRIMITIVE_TO_LANG_OP,
     CodegenResult,
@@ -132,6 +133,7 @@ __all__ = [  # noqa: RUF022 - grouped by public subsystem for API readability
     "CacheEntry",
     # codegen
     "CodegenResult",
+    "CobolVerification",
     "Effect",
     "Concept",
     # discovery
@@ -185,6 +187,7 @@ __all__ = [  # noqa: RUF022 - grouped by public subsystem for API readability
     "foreach",
     "generate_code",
     "generate_program_source",
+    "verify_cobol_round_trip",
     "get_assisted_cache",
     "get_capability_info",
     "get_contract",

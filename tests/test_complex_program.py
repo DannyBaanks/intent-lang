@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from intentlang.cobol_guard import verify_cobol_round_trip
 from intentlang.codegen import generate_code
 from intentlang.complex_program import (
     Effect,
@@ -222,6 +223,30 @@ def test_cobol_generated_program_compiles_and_runs_when_available(tmp_path):
     assert (tmp_path / "cobol-output.txt").read_text(encoding="utf-8").strip() == "standalone-pass"
 
 
+def test_cobol_variable_read_rejects_oversized_record_when_available(tmp_path):
+    compiler = shutil.which("cobc")
+    if compiler is None:
+        pytest.skip("cobc unavailable")
+    (tmp_path / "input.txt").write_text("x" * 4097 + "\n", encoding="utf-8")
+    program = parse_structured(json.dumps({"steps": [{
+        "call": "cap.fs.read", "inputs": {"path": "input.txt"},
+    }]}))
+    source = tmp_path / "program.cob"
+    executable = tmp_path / "program.exe"
+    source.write_text(generate_program_source(program, "cobol").source, encoding="utf-8")
+    command = [compiler, "-x", "-free"]
+    config_dir = os.environ.get("COB_CONFIG_DIR")
+    if config_dir:
+        command.extend(["--conf", str(Path(config_dir) / "default.conf")])
+    command.extend(["-o", str(executable), str(source)])
+    subprocess.run(command, check=True, capture_output=True, text=True)
+
+    result = subprocess.run([str(executable)], cwd=tmp_path, check=False, capture_output=True, text=True)
+
+    assert result.returncode == 99
+    assert "CRITICAL: SEMANTIC INVARIANT VIOLATION" in result.stdout
+
+
 def test_cobol_codegen_keeps_advanced_features_as_hooks():
     result = generate_code("QUERY", "cobol", {"query": "select 1"})
     assert result.verified is False
@@ -296,3 +321,111 @@ def test_cobol_program_renderer_emits_transaction_restore_path():
     assert "tracked.txt.intentlang.bak" in generated.source
     assert "CBL-COPY-FILE" in generated.source
     assert "IF WS-ERROR NOT = 0" in generated.source
+
+
+def test_cobol_inverse_guard_accepts_generated_linear_program():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+        {"call": "cap.fs.copy", "inputs": {"src": "out.txt", "dst": "copy.txt"}},
+        {"call": "cap.fs.delete", "inputs": {"path": "copy.txt"}},
+    ]}))
+    source = generate_program_source(program, "cobol").source
+
+    result = verify_cobol_round_trip(program, source)
+
+    assert result.passed is True
+    assert result.reason == "PASS"
+    assert result.expected == result.recovered
+
+
+def test_cobol_renderer_injects_write_and_read_invariants():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+        {"call": "cap.fs.read", "inputs": {"path": "out.txt"}},
+    ]}))
+
+    source = generate_program_source(program, "cobol").source
+
+    assert "01 WS-MAX-RECORD-SIZE PIC 9(9) COMP-5 VALUE 4096." in source
+    assert source.count("CRITICAL: SEMANTIC INVARIANT VIOLATION") == 2
+    assert source.count("CRITICAL: FILE STATUS VIOLATION") == 6
+    assert "IF FUNCTION LENGTH('ok') > WS-MAX-RECORD-SIZE" in source
+    assert "RECORD IS VARYING IN SIZE FROM 1 TO 8192 CHARACTERS" in source
+    assert "IF WS-INPUT-SIZE > WS-MAX-RECORD-SIZE" in source
+
+
+def test_cobol_renderer_injects_foreach_index_and_item_invariants():
+    program = parse_structured(json.dumps({"steps": [{
+        "foreach": {"in": ["one", "two"], "as": "item", "do": {
+            "call": "cap.process.run", "inputs": {"cmd": "echo one"},
+        }},
+    }]}))
+
+    source = generate_program_source(program, "cobol").source
+
+    assert "IF INDEX-1 > 2" in source
+    assert "SEMANTIC INVARIANT VIOLATION - FOREACH index OUT OF BOUNDS" in source
+    assert "SEMANTIC INVARIANT VIOLATION - FOREACH item OUT OF BOUNDS" in source
+
+
+def test_cobol_inverse_guard_rejects_mutated_literal():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+    ]}))
+    source = generate_program_source(program, "cobol").source.replace("MOVE 'ok'", "MOVE 'tampered'")
+
+    result = verify_cobol_round_trip(program, source)
+
+    assert result.passed is False
+    assert result.reason.startswith("MISMATCH:")
+
+
+def test_cobol_inverse_guard_rejects_missing_defense():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+    ]}))
+    source = generate_program_source(program, "cobol").source
+    source = source.replace("IF FUNCTION LENGTH('ok') > WS-MAX-RECORD-SIZE", "")
+
+    result = verify_cobol_round_trip(program, source)
+
+    assert result.passed is False
+    assert result.reason.startswith("INVARIANT_VIOLATION:")
+
+
+def test_cobol_inverse_guard_rejects_injected_statement():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+    ]}))
+    source = generate_program_source(program, "cobol").source.replace(
+        "PROCEDURE DIVISION.", "PROCEDURE DIVISION.\n    DISPLAY 'injected'."
+    )
+
+    result = verify_cobol_round_trip(program, source)
+
+    assert result.passed is False
+    assert result.reason.startswith("NOT_SUPPORTED:")
+
+
+def test_cobol_inverse_guard_rejects_unrecognized_source():
+    program = parse_structured(json.dumps({"steps": [
+        {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+    ]}))
+
+    result = verify_cobol_round_trip(program, "DISPLAY 'ok'.")
+
+    assert result.passed is False
+    assert result.reason.startswith("NOT_SUPPORTED:")
+
+
+def test_cobol_inverse_guard_rejects_control_flow_for_now():
+    program = parse_structured(json.dumps({"steps": [{"if": {
+        "condition": {"compare": {"op": "eq", "left": "a", "right": "a"}},
+        "then": {"call": "cap.fs.write", "inputs": {"path": "out.txt", "content": "ok"}},
+    }}]}))
+    source = generate_program_source(program, "cobol").source
+
+    result = verify_cobol_round_trip(program, source)
+
+    assert result.passed is False
+    assert result.reason.startswith("NOT_SUPPORTED:")

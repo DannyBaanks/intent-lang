@@ -69,10 +69,14 @@ public class IntentProgram {
 class _CobolRenderer:
     """Render the effect subset using GnuCOBOL-compatible source constructs."""
 
+    MAX_RECORD_SIZE = 4096
+    MAX_INPUT_RECORD_SIZE = 8192
+
     def __init__(self) -> None:
         self.variables: dict[str, str] = {}
         self.bindings: list[tuple[str, str]] = []
         self.files: list[tuple[str, str, str]] = []
+        self.variable_input_files: set[str] = set()
         self.tables: list[tuple[str, list[str]]] = []
         self.working_variables: list[str] = []
         self.operations: list[str] = []
@@ -158,6 +162,7 @@ class _CobolRenderer:
             self.variables[name] = variable_name
             self.operations.extend([
                 f"PERFORM VARYING {index_name} FROM 1 BY 1 UNTIL {index_name} > {len(values)}",
+                *self._bound_guard(index_name, len(values), "FOREACH index"),
                 f"MOVE {table_name}-VALUE ({index_name}) TO {variable_name}",
             ])
             self.node(body)
@@ -222,14 +227,33 @@ class _CobolRenderer:
             file_name = f"OUT-FILE-{index}"
             record_name = f"OUT-REC-{index}"
             self.files.append((file_name, record_name, args["path"]))
-            self.operations.extend([f"OPEN OUTPUT {file_name}", "IF WS-FILE-STATUS NOT = '00' MOVE 1 TO WS-ERROR END-IF", f"MOVE {args['content']} TO {record_name}", f"WRITE {record_name}", "IF WS-FILE-STATUS NOT = '00' MOVE 1 TO WS-ERROR END-IF", f"CLOSE {file_name}", "IF WS-FILE-STATUS NOT = '00' MOVE 1 TO WS-ERROR END-IF"])
+            self.operations.extend([
+                f"OPEN OUTPUT {file_name}",
+                *self._status_guard("OPEN"),
+                *self._size_guard(args["content"], "WS-MAX-RECORD-SIZE", "WRITE record"),
+                f"MOVE {args['content']} TO {record_name}",
+                f"WRITE {record_name}",
+                *self._status_guard("WRITE"),
+                f"CLOSE {file_name}",
+                *self._status_guard("CLOSE"),
+            ])
         elif capability == "cap.fs.read":
             self._require(args, capability, "path")
             index = len(self.files) + 1
             file_name = f"IN-FILE-{index}"
             record_name = f"IN-REC-{index}"
             self.files.append((file_name, record_name, args["path"]))
-            self.operations.extend([f"OPEN INPUT {file_name}", "IF WS-FILE-STATUS NOT = '00' MOVE 1 TO WS-ERROR END-IF", f"READ {file_name} INTO {record_name}", "IF WS-FILE-STATUS NOT = '00' MOVE 1 TO WS-ERROR END-IF", f"DISPLAY {record_name}", f"CLOSE {file_name}"])
+            self.variable_input_files.add(file_name)
+            self.operations.extend([
+                f"OPEN INPUT {file_name}",
+                *self._status_guard("OPEN"),
+                f"READ {file_name} INTO {record_name}",
+                *self._status_guard("READ"),
+                *self._bound_guard("WS-INPUT-SIZE", "WS-MAX-RECORD-SIZE", "READ record"),
+                f"DISPLAY {record_name}",
+                f"CLOSE {file_name}",
+                *self._status_guard("CLOSE"),
+            ])
         elif capability in {"cap.fs.copy", "cap.fs.move"}:
             self._require(args, capability, "src", "dst")
             routine = "CBL-COPY-FILE" if capability.endswith("copy") else "CBL-RENAME-FILE"
@@ -248,6 +272,37 @@ class _CobolRenderer:
         if missing:
             raise PortableCodegenError(f"missing inputs for {capability}: {', '.join(missing)}")
 
+    @staticmethod
+    def _status_guard(operation: str) -> list[str]:
+        return [
+            "IF WS-FILE-STATUS NOT = '00'",
+            f"DISPLAY 'CRITICAL: FILE STATUS VIOLATION - {operation}'",
+            "MOVE 99 TO RETURN-CODE",
+            "MOVE 1 TO WS-ERROR",
+            "STOP RUN",
+            "END-IF",
+        ]
+
+    @staticmethod
+    def _size_guard(expression: str, maximum: str, label: str) -> list[str]:
+        return [
+            f"IF FUNCTION LENGTH({expression}) > {maximum}",
+            f"DISPLAY 'CRITICAL: SEMANTIC INVARIANT VIOLATION - {label} OUT OF BOUNDS'",
+            "MOVE 99 TO RETURN-CODE",
+            "STOP RUN",
+            "END-IF",
+        ]
+
+    @staticmethod
+    def _bound_guard(expression: str, maximum: str | int, label: str) -> list[str]:
+        return [
+            f"IF {expression} > {maximum}",
+            f"DISPLAY 'CRITICAL: SEMANTIC INVARIANT VIOLATION - {label} OUT OF BOUNDS'",
+            "MOVE 99 TO RETURN-CODE",
+            "STOP RUN",
+            "END-IF",
+        ]
+
     def render(self, program: Program) -> PortableSource:
         self.node(program.root)
         lines = [
@@ -258,8 +313,24 @@ class _CobolRenderer:
             lines.extend([f"    SELECT {file_name} ASSIGN TO {path}", "        ORGANIZATION IS LINE SEQUENTIAL", "        FILE STATUS IS WS-FILE-STATUS."])
         lines.extend(["DATA DIVISION.", "FILE SECTION."])
         for file_name, record_name, _ in self.files:
-            lines.extend([f"FD {file_name}.", f"01 {record_name} PIC X(4096)."])
-        lines.extend(["WORKING-STORAGE SECTION.", "01 WS-ERROR PIC S9(9) COMP-5 VALUE 0.", "01 WS-FILE-STATUS PIC XX VALUE '00'.", "01 WS-RETURN PIC S9(9) COMP-5 VALUE 0.", "01 WS-RETURN-PENDING PIC 9 VALUE 0."])
+            if file_name in self.variable_input_files:
+                lines.extend([
+                    f"FD {file_name}",
+                    f"    RECORD IS VARYING IN SIZE FROM 1 TO {self.MAX_INPUT_RECORD_SIZE} CHARACTERS",
+                    "    DEPENDING ON WS-INPUT-SIZE.",
+                    f"01 {record_name} PIC X({self.MAX_INPUT_RECORD_SIZE}).",
+                ])
+            else:
+                lines.extend([f"FD {file_name}.", f"01 {record_name} PIC X(4096)."])
+        lines.extend([
+            "WORKING-STORAGE SECTION.",
+            "01 WS-ERROR PIC S9(9) COMP-5 VALUE 0.",
+            "01 WS-FILE-STATUS PIC XX VALUE '00'.",
+            f"01 WS-MAX-RECORD-SIZE PIC 9(9) COMP-5 VALUE {self.MAX_RECORD_SIZE}.",
+            "01 WS-INPUT-SIZE PIC 9(9) COMP-5 VALUE 0.",
+            "01 WS-RETURN PIC S9(9) COMP-5 VALUE 0.",
+            "01 WS-RETURN-PENDING PIC 9 VALUE 0.",
+        ])
         for table_name, values in self.tables:
             lines.append(f"01 {table_name}.")
             lines.append(f"    05 {table_name}-VALUE PIC X(4096) OCCURS {len(values)} TIMES.")
@@ -271,11 +342,11 @@ class _CobolRenderer:
         )
         for identifier, value in self.bindings:
             lines.append(f"01 {identifier} PIC X(4096) VALUE {value}.")
-        initializers = [
-            f"MOVE {value} TO {table_name}-VALUE ({index})"
-            for table_name, values in self.tables
-            for index, value in enumerate(values, 1)
-        ]
+        initializers: list[str] = []
+        for table_name, values in self.tables:
+            for index, value in enumerate(values, 1):
+                initializers.extend(self._size_guard(value, "WS-MAX-RECORD-SIZE", "FOREACH item"))
+                initializers.append(f"MOVE {value} TO {table_name}-VALUE ({index})")
         operations = (*initializers, *self.operations, "IF WS-RETURN-PENDING = 1", "GOBACK RETURNING WS-RETURN", "END-IF")
         lines.extend(["PROCEDURE DIVISION.", *[f"    {operation}" for operation in operations], "    GOBACK."])
         return PortableSource("cobol", "\n".join(lines) + "\n")

@@ -16,13 +16,24 @@ py -m intentlang judge "agrégale cuerpo" --lang es  # -> judgments.jsonl
 py -m intentlang execute "copia el archivo" --lang es   # resolve + lower -> Program IR
 ```
 
-COBOL está disponible como backend experimental. Genera fuente COBOL real para
-`WRITE`, `READ`, `RUN`, `COPY`, `MOVE` y `DELETE`, además de `IF/ELSE` y
-`FOREACH` sobre listas literales. También puede renderizar secuencias
-estructuradas, `TRY` basado en estados, `RETURN` numérico, funciones
-estructuradas y transacciones con rutas explícitas. El backend requiere
-GnuCOBOL instalado y accesible como `cobc`; las capacidades fuera de esta
-superficie siguen como hooks no habilitados.
+El backend COBOL genera fuente compatible con GnuCOBOL para `WRITE`, `READ`,
+`RUN`, `COPY`, `MOVE` y `DELETE`. También cubre secuencias, `IF/ELSE`,
+`FOREACH` sobre listas literales, `TRY`, `RETURN`, funciones estructuradas y
+transacciones con rutas explícitas. Las capabilities fuera de esta lista se
+mantienen como hooks no habilitados. La compilación requiere `cobc` instalado.
+
+`verify_cobol_round_trip` recupera capabilities e inputs literales de programas
+lineales generados y los compara con el `Program IR` original. Antes de aceptar
+el resultado valida los inputs contra los contratos registrados. Si encuentra
+una mutación, una sentencia extra o una construcción que no reconoce, devuelve
+rechazo o `NOT_SUPPORTED`.
+
+En `READ`, el renderer declara un registro variable con un buffer máximo de
+`8192` bytes y obtiene la longitud mediante `WS-INPUT-SIZE`. El límite de la
+capability es `4096` bytes. El test correspondiente usa un registro de `4097`
+bytes y comprueba que el ejecutable termina con código `99` sin procesarlo.
+Esta comprobación corresponde a ese layout; otros layouts COBOL necesitan
+pruebas específicas.
 
 ## Instalación autónoma
 
