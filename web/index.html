@@ -15,10 +15,29 @@
     </header>
 
     <nav class="menubar" aria-label="Menú">
-      <button type="button">Archivo</button>
-      <button type="button">Edición</button>
-      <button type="button">Ver</button>
-      <button type="button">Ayuda</button>
+      <button class="menu-trigger" data-menu="file-menu" type="button">Archivo</button>
+      <button class="menu-trigger" data-menu="edit-menu" type="button">Edición</button>
+      <button class="menu-trigger" data-menu="view-menu" type="button">Ver</button>
+      <button class="menu-trigger" data-menu="help-menu" type="button">Ayuda</button>
+      <div id="file-menu" class="menu-dropdown" hidden>
+        <button id="open-file" type="button">Abrir archivo...</button>
+        <button id="load-example" type="button">Cargar ejemplo</button>
+        <button id="download-input" type="button">Descargar entrada</button>
+        <button id="download-ir" type="button">Descargar último IR</button>
+      </div>
+      <div id="edit-menu" class="menu-dropdown" hidden>
+        <button id="copy-input" type="button">Copiar entrada</button>
+        <button id="select-input" type="button">Seleccionar todo</button>
+        <button id="clear-menu" type="button">Limpiar entrada</button>
+      </div>
+      <div id="view-menu" class="menu-dropdown" hidden>
+        <button id="toggle-trace" type="button">Ocultar traza</button>
+        <button id="toggle-compact" type="button">Alternar modo compacto</button>
+      </div>
+      <div id="help-menu" class="menu-dropdown" hidden>
+        <button id="show-examples" type="button">Ejemplos...</button>
+        <button id="show-about" type="button">Acerca de esta demo</button>
+      </div>
       <span class="menu-spacer"></span>
       <span id="machine-status" class="machine-status"><i></i> STATIC / DEMO</span>
     </nav>
@@ -102,6 +121,26 @@
         <div><span class="trace-time">--:--:--</span><span class="trace-muted">no se ejecutan capabilities desde esta pantalla</span></div>
       </div>
     </section>
+
+    <input id="file-picker" type="file" accept=".py,.txt,.json,.yaml,.yml" hidden>
+    <dialog id="examples-dialog" class="modal-dialog">
+      <div class="modal-titlebar">Ejemplos <button class="modal-close" data-close="examples-dialog" type="button">×</button></div>
+      <div class="modal-body">
+        <p>Selecciona una frase para cargarla en la entrada.</p>
+        <div class="example-list">
+          <button data-example-lang="es" data-example-text="agrégale cuerpo" type="button"><b>es</b> agrégale cuerpo</button>
+          <button data-example-lang="en" data-example-text="add body" type="button"><b>en</b> add body</button>
+          <button data-example-lang="es" data-example-text="copia el archivo" type="button"><b>es</b> copia el archivo</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="about-dialog" class="modal-dialog">
+      <div class="modal-titlebar">Acerca de intent-lang <button class="modal-close" data-close="about-dialog" type="button">×</button></div>
+      <div class="modal-body">
+        <p>Demo estática de la consola de intent-lang.</p>
+        <p>La interfaz muestra la entrada y el Intent IR. No ejecuta capabilities ni modifica archivos.</p>
+      </div>
+    </dialog>
 
     <footer class="statusbar">
       <span><i class="status-dot"></i> listo</span>

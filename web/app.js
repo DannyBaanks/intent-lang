@@ -8,8 +8,109 @@ const count = document.querySelector("#char-count");
 const roundtrip = document.querySelector("#roundtrip-label");
 const copyButton = document.querySelector("#copy");
 const machineStatus = document.querySelector("#machine-status");
+const tracePanel = document.querySelector(".trace-panel");
+const shell = document.querySelector(".desktop-shell");
+const filePicker = document.querySelector("#file-picker");
 
 let lastIR = "";
+
+function closeMenus() {
+  document.querySelectorAll(".menu-dropdown").forEach((menu) => { menu.hidden = true; });
+}
+
+document.querySelectorAll(".menu-trigger").forEach((trigger) => {
+  trigger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const menu = document.querySelector(`#${trigger.dataset.menu}`);
+    const wasHidden = menu.hidden;
+    closeMenus();
+    menu.hidden = !wasHidden;
+  });
+});
+document.addEventListener("click", closeMenus);
+
+function downloadText(name, text, type = "text/plain") {
+  const blob = new Blob([text], { type });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+document.querySelector("#open-file").addEventListener("click", () => {
+  closeMenus();
+  filePicker.click();
+});
+
+filePicker.addEventListener("change", () => {
+  const file = filePicker.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    source.value = String(reader.result || "");
+    source.dispatchEvent(new Event("input"));
+    addTrace(`archivo cargado: ${file.name}`, "trace-good");
+  };
+  reader.readAsText(file, "UTF-8");
+  filePicker.value = "";
+});
+
+document.querySelector("#load-example").addEventListener("click", () => {
+  closeMenus();
+  document.querySelector("#examples-dialog").showModal();
+});
+document.querySelector("#download-input").addEventListener("click", () => {
+  closeMenus();
+  downloadText("intent-input.txt", source.value);
+});
+document.querySelector("#download-ir").addEventListener("click", () => {
+  closeMenus();
+  if (lastIR) downloadText("intent-ir.json", lastIR, "application/json");
+});
+document.querySelector("#copy-input").addEventListener("click", async () => {
+  closeMenus();
+  await navigator.clipboard.writeText(source.value);
+  addTrace("entrada copiada al portapapeles", "trace-good");
+});
+document.querySelector("#select-input").addEventListener("click", () => {
+  closeMenus();
+  source.focus();
+  source.select();
+});
+document.querySelector("#clear-menu").addEventListener("click", () => {
+  closeMenus();
+  document.querySelector("#clear").click();
+});
+document.querySelector("#toggle-trace").addEventListener("click", (event) => {
+  closeMenus();
+  tracePanel.classList.toggle("is-hidden");
+  event.currentTarget.textContent = tracePanel.classList.contains("is-hidden") ? "Mostrar traza" : "Ocultar traza";
+});
+document.querySelector("#toggle-compact").addEventListener("click", () => {
+  closeMenus();
+  shell.classList.toggle("compact");
+});
+document.querySelector("#show-examples").addEventListener("click", () => {
+  closeMenus();
+  document.querySelector("#examples-dialog").showModal();
+});
+document.querySelector("#show-about").addEventListener("click", () => {
+  closeMenus();
+  document.querySelector("#about-dialog").showModal();
+});
+document.querySelectorAll("[data-close]").forEach((button) => {
+  button.addEventListener("click", () => document.querySelector(`#${button.dataset.close}`).close());
+});
+document.querySelectorAll("[data-example-text]").forEach((button) => {
+  button.addEventListener("click", () => {
+    language.value = button.dataset.exampleLang;
+    source.value = button.dataset.exampleText;
+    source.dispatchEvent(new Event("input"));
+    document.querySelector("#examples-dialog").close();
+    source.focus();
+  });
+});
 
 function stamp() {
   return new Date().toLocaleTimeString("es-ES", { hour12: false });

@@ -72,6 +72,7 @@ button { cursor: pointer; }
 }
 
 .menubar {
+  position: relative;
   display: flex;
   align-items: center;
   min-height: 29px;
@@ -87,6 +88,42 @@ button { cursor: pointer; }
   padding: 4px 9px;
 }
 .menubar button:hover, .flat-button:hover { background: #d9e5f2; }
+.menu-trigger { position: relative; }
+.menu-dropdown {
+  position: absolute;
+  z-index: 10;
+  top: 27px;
+  min-width: 190px;
+  padding: 4px;
+  border: 1px solid #71879d;
+  background: #f5f7f9;
+  box-shadow: 3px 3px 0 rgba(30, 48, 67, .22);
+}
+.menu-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 6px 9px;
+  text-align: left;
+  white-space: nowrap;
+}
+.modal-dialog {
+  width: min(440px, calc(100% - 30px));
+  padding: 0;
+  border: 1px solid #52667d;
+  box-shadow: 8px 8px 0 rgba(38, 53, 70, .25);
+}
+.modal-dialog::backdrop { background: rgba(18, 31, 45, .42); }
+.modal-titlebar { display: flex; justify-content: space-between; padding: 8px 10px; color: white; background: var(--blue); font-weight: bold; }
+.modal-close { padding: 0 5px; border: 1px solid #b5cbea; background: #255a99; color: white; line-height: 16px; }
+.modal-body { padding: 14px; background: #f4f6f8; color: #405367; }
+.modal-body p { margin-top: 0; line-height: 1.5; }
+.example-list { display: grid; gap: 6px; }
+.example-list button { padding: 8px 10px; border: 1px solid #a6b5c3; background: white; color: var(--ink); text-align: left; }
+.example-list button:hover { border-color: var(--blue); background: var(--blue-light); }
+.example-list b { display: inline-block; width: 28px; color: var(--blue); font: 11px Consolas, monospace; }
+.trace-panel.is-hidden { display: none; }
+.desktop-shell.compact .intro-strip { padding-top: 15px; padding-bottom: 15px; }
+.desktop-shell.compact textarea, .desktop-shell.compact .output-area { height: 145px; min-height: 110px; }
 .menu-spacer { flex: 1; }
 .machine-status, .panel-code, .eyebrow, .note-label, .state-badge, .statusbar {
   font: 10px Consolas, "Courier New", monospace;
@@ -182,4 +219,5 @@ kbd { padding: 2px 5px; border: 1px solid #acb7c2; border-bottom-width: 2px; bor
   .hint { line-height: 1.8; }
   .trace-panel { margin-right: 17px; margin-left: 17px; }
   .statusbar span:nth-child(2), .statusbar span:nth-child(3) { display: none; }
+  .menu-dropdown { left: 5px; }
 }
