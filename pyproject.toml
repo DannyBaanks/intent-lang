@@ -1,0 +1,66 @@
+[project]
+name = "intentlang"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "wn>=0.9.5",
+    "simplemma>=1.0.0",
+    "jieba>=0.42.1",
+    "PyYAML>=6.0",
+    "jsonschema>=4.17",
+    "fugashi>=1.1",
+    # fugashi es solo el binding: sin diccionario, Tagger() revienta con
+    # "no such file or directory: c:\mecab\mecabrc". unidic-lite lo aporta.
+    "unidic-lite>=1.0.8",
+    "kiwipiepy>=0.12",
+    "pymorphy3>=0.4",
+]
+
+[project.scripts]
+intentlang = "intentlang.cli:main"
+engine-lang = "engine_lang.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.16,<0.17", "mypy>=2.3,<2.4"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"engine_lang" = [
+    "languages/*.yaml",
+    "contracts/*.json",
+]
+[tool.ruff]
+# El CI instala una version fijada (ver .github/workflows/ci.yml). Sin este bloque
+# el set de reglas lo decidia la version de ruff del dia, no el repo.
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# E501 (145 hits) y W (350, casi todo whitespace) quedan fuera a proposito:
+# son ruido de formato, no senal. Activarlos es una limpieza aparte.
+select = [
+    "E4", "E7", "E9",  # pycodestyle: los que importan, sin line-too-long
+    "F",               # pyflakes: imports muertos, variables muertas, redefiniciones
+    "I",               # isort
+    "UP",              # pyupgrade
+    "B",               # bugbear
+    "C4",              # comprehensions
+    "PIE",
+    "PERF",
+    "FLY",
+    "RUF",
+    "PLC0206",
+    "PLR1733",
+    "PLW1510",         # subprocess.run sin check= explicito
+]
+ignore = [
+    # Status(str, Enum) -> StrEnum cambiaria el str() de los miembros, y con el la
+    # serializacion y el determinismo que la suite mide. No es una migracion gratis.
+    "UP042",
+]

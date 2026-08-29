@@ -1,0 +1,30 @@
+# Japanese — Japonic, agglutinative, mixed scripts (kanji + kana + romaji)
+# Tokenization: fugashi/UniDic (morphological analyzer)
+# Verb reconstruction: suru-compounds (コピー+する)
+# UniDic lemmas carry source reading: ファイル-file → file
+code: ja
+name: 日本語
+family: Japonic
+script: mixed (kanji/kana/romaji)
+
+wordnet:
+  package: omw-ja:1.4
+
+tokenizer:
+  strategy: fugashi
+
+verb_strategy: ja_suru
+
+declared_gaps:
+  i34961: ["zh", "ja", "ar"]   # COPY: omw-cmn/ja/arb no enlazan este ILI
+  i30414: ["zh", "ja", "ar"]   # COPY: omw-cmn/ja/arb no enlazan este ILI
+
+declared_passthrough: {}
+
+corpus:
+  - text: ファイルをコピーする
+    label: ["COPY", "i53691"]
+  - text: ファイルを削除する
+    label: ["REMOVE", "i53691"]
+  - text: ファイルを動かす
+    label: ["MOVE", "i70665"]

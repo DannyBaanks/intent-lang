@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "intent-lang/language.v1",
+  "title": "intent-lang language pack",
+  "description": "Declarative definition of a human language for intent-lang. One YAML file per language. The core reads these and populates runtime dicts — no code generation.",
+  "type": "object",
+  "required": ["code", "name", "family", "wordnet", "tokenizer"],
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}$",
+      "description": "ISO 639-1 or 639-3 code. Must match the key used in LEXICON_SOURCES."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name (endonym preferred)."
+    },
+    "family": {
+      "type": "string",
+      "description": "Language family classification (e.g. 'Indo-European/Romance', 'Sino-Tibetan', 'Uralic')."
+    },
+    "script": {
+      "type": "string",
+      "description": "Primary writing system (e.g. 'latin', 'arabic', 'hangul', 'kanji')."
+    },
+    "wordnet": {
+      "type": "object",
+      "required": ["package"],
+      "additionalProperties": false,
+      "properties": {
+        "package": {
+          "type": "string",
+          "description": "OMW package ID (e.g. 'omw-fi:1.4')."
+        }
+      }
+    },
+    "tokenizer": {
+      "type": "object",
+      "required": ["strategy"],
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "enum": ["simplemma", "jieba", "fugashi", "kiwi", "pymorphy3", "regex"],
+          "description": "Tokenization + lemmatization strategy."
+        },
+        "options": {
+          "type": "object",
+          "description": "Strategy-specific options (e.g. extra imports, config flags)."
+        }
+      }
+    },
+    "verb_candidates": {
+      "type": "object",
+      "description": "Per-lemma verb reconstruction rules. Keys are surface forms, values are infinitives to propose. Only for languages where lemmatization fails on specific forms.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "verb_strategy": {
+      "type": "string",
+      "enum": ["none", "es_imperative", "ja_suru"],
+      "description": "Built-in verb reconstruction strategy. Overrides verb_candidates if set."
+    },
+    "declared_gaps": {
+      "type": "object",
+      "description": "ILI IDs where this language has NO coverage. Keys are ILI IDs, values are list of language codes (usually just this language). Measured, not assumed.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "declared_passthrough": {
+      "type": "object",
+      "description": "ILI IDs where round-trip re-lexification returns the same word (passthrough). Keys are ILI IDs, values are list of language codes.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "corpus": {
+      "type": "array",
+      "description": "Seed corpus cases for this language. Minimum 3 cases (COPY, REMOVE, MOVE).",
+      "items": {
+        "type": "object",
+        "required": ["text", "label"],
+        "properties": {
+          "text": { "type": "string" },
+          "label": {
+            "oneOf": [
+              { "type": "string", "description": "Legacy format: 'PRIMITIVE/operand'" },
+              {
+                "type": "array",
+                "description": "Semantic format: ['PRIMITIVE', 'operand_ILI']",
+                "items": { "type": "string" },
+                "minItems": 2,
+                "maxItems": 3
+              }
+            ]
+          }
+        }
+      },
+      "minItems": 3
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# Hebrew — Afroasiatic/Semitic, root-and-pattern, RTL, different roots from Arabic
+# Tokenization: simplemma (native Hebrew support)
+# Verb reconstruction: none (root morphology, like Arabic)
+code: he
+name: עברית
+family: Afroasiatic/Semitic
+script: hebrew (RTL)
+
+wordnet:
+  package: omw-he:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps:
+  i22623: ["he"]   # ADD: omw-he no tiene este sentido
+  i30214: ["he"]   # COPY: omw-he no tiene este sentido
+  i34961: ["he"]   # COPY: omw-he no tiene este sentido
+  i30414: ["he"]   # COPY: omw-he no tiene este sentido
+  i26584: ["he"]   # REMOVE: omw-he no tiene este sentido
+  i30886: ["he"]   # MOVE: omw-he no tiene este sentido
+  i34510: ["he"]   # RUN: omw-he no tiene sentido directo
+  i32402: ["he"]   # QUERY: omw-he no tiene este sentido
+  i32509: ["he"]   # QUERY: omw-he no tiene este sentido
+  i25271: ["he"]   # CONNECT: omw-he no tiene este sentido
+  i28468: ["he"]   # CONNECT: omw-he no tiene este sentido
+
+declared_passthrough: {}
+
+corpus:
+  - text: העתק את הקובץ
+    label: ["COPY", "i30214"]
+  - text: מחק את הקובץ
+    label: ["REMOVE", "i26584"]
+  - text: הזז את הקובץ
+    label: ["MOVE", "i30886"]

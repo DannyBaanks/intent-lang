@@ -1,0 +1,27 @@
+# Russian — IE/Slavic, fusional, cyrillic script
+# Tokenization: pymorphy3 (morphological analyzer)
+# Verb reconstruction: none (inflectional)
+code: ru
+name: Русский
+family: Indo-European/Slavic
+script: cyrillic
+
+wordnet:
+  package: omw-ru:1.4
+
+tokenizer:
+  strategy: pymorphy3
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: копировать файл
+    label: ["COPY", "i70665"]
+  - text: удалить файл
+    label: ["REMOVE", "i70665"]
+  - text: переместить файл
+    label: ["MOVE", "i70665"]

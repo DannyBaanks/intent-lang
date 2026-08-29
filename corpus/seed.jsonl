@@ -1,0 +1,21 @@
+{"text": "copia el archivo", "lang": "es", "label": "COPY/file"}
+{"text": "duplica el fichero", "lang": "es", "label": "COPY/file"}
+{"text": "copy the file", "lang": "en", "label": "COPY/file"}
+{"text": "复制文件", "lang": "zh", "label": "COPY/file"}
+{"text": "borra el archivo", "lang": "es", "label": "REMOVE/file"}
+{"text": "elimina el fichero", "lang": "es", "label": "REMOVE/file"}
+{"text": "delete the file", "lang": "en", "label": "REMOVE/file"}
+{"text": "mueve el archivo", "lang": "es", "label": "MOVE/file"}
+{"text": "move the file", "lang": "en", "label": "MOVE/file"}
+{"text": "ファイルをコピーする", "lang": "ja", "label": "COPY/file"}
+{"text": "ファイルを削除する", "lang": "ja", "label": "REMOVE/file"}
+{"text": "ファイルを動かす", "lang": "ja", "label": "MOVE/file"}
+{"text": "ファイルをコピーする", "lang": "ja", "label": "COPY/file"}
+{"text": "ファイルを削除する", "lang": "ja", "label": "REMOVE/file"}
+{"text": "ファイルを動かす", "lang": "ja", "label": "MOVE/file"}
+{"text": "نسخ الملف", "lang": "ar", "label": "COPY/file"}
+{"text": "احذف الملف", "lang": "ar", "label": "REMOVE/file"}
+{"text": "حرك الملف", "lang": "ar", "label": "MOVE/file"}
+{"text": "kopioi tiedosto", "lang": "fi", "label": "COPY/file"}
+{"text": "poista tiedosto", "lang": "fi", "label": "REMOVE/file"}
+{"text": "siirrä tiedosto", "lang": "fi", "label": "MOVE/file"}

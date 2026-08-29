@@ -1,0 +1,27 @@
+# Hindi — IE/Indo-Aryan, fusional, devanagari script
+# Tokenization: simplemma (if supported) or custom
+# Verb reconstruction: none (inflectional)
+code: hi
+name: हिन्दी
+family: Indo-European/Indo-Aryan
+script: devanagari
+
+wordnet:
+  package: omw-hi:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: फाइल कॉपी करें
+    label: ["COPY", "i70665"]
+  - text: फाइल डिलीट करें
+    label: ["REMOVE", "i70665"]
+  - text: फाइल मूव करें
+    label: ["MOVE", "i70665"]

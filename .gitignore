@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.venv/
+
+# Packaging
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Test artifacts
+.test_cache/
+.test_cache*/
+.test_final/
+.intent_cache/
+.malbolge_cache/
+.malbolge_cache*/
+*.mal
+*.mal.cache
+
+# Build
+dist/
+build/

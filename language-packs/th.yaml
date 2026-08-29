@@ -1,0 +1,27 @@
+# Thai — Kra-Dai, tonal, abugida script
+# Tokenization: simplemma (if supported) or custom
+# Verb reconstruction: none (isolating/analytic)
+code: th
+name: ภาษาไทย
+family: Kra-Dai/Tai
+script: thai
+
+wordnet:
+  package: omw-th:2.0
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: คัดลอกไฟล์
+    label: ["COPY", "i70665"]
+  - text: ลบไฟล์
+    label: ["REMOVE", "i70665"]
+  - text: ย้ายไฟล์
+    label: ["MOVE", "i70665"]

@@ -1,0 +1,27 @@
+# English — IE/Germanic, analytic, latin
+# Tokenization: simplemma
+# Verb reconstruction: none (infinitive = imperative: "copy the file")
+code: en
+name: English
+family: Indo-European/Germanic
+script: latin
+
+wordnet:
+  package: omw-en:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: copy the file
+    label: ["COPY", "i70665"]
+  - text: delete the file
+    label: ["REMOVE", "i70665"]
+  - text: move the file
+    label: ["MOVE", "i70665"]

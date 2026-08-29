@@ -1,0 +1,29 @@
+# Turkish — Turkic, agglutinative, vowel harmony, SOV, latin script
+# Tokenization: simplemma (native Turkish support for lemmatization)
+# Wordnet: NONE in OMW yet — placeholder package ID
+# Verb reconstruction: none (Turkish infinitives are stable)
+# When OMW adds Turkish (omw-tr:1.4), change wordnet.package and it works.
+code: tr
+name: Türkçe
+family: Turkic
+script: latin
+
+wordnet:
+  package: omw-tr:1.4  # PLACEHOLDER — does not exist in OMW yet
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: dosyayı kopyala
+    label: COPY/file
+  - text: dosyayı sil
+    label: REMOVE/file
+  - text: dosyayı taşı
+    label: MOVE/file

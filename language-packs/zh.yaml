@@ -1,0 +1,30 @@
+# Chinese — Sino-Tibetan, isolating, logographic
+# Tokenization: jieba (word segmentation, no spaces)
+# Verb reconstruction: none (no inflection)
+code: zh
+name: 中文
+family: Sino-Tibetan
+script: logographic
+
+wordnet:
+  package: omw-cmn:1.4
+
+tokenizer:
+  strategy: jieba
+
+verb_strategy: none
+
+declared_gaps:
+  i22623: ["zh"]   # ADD: omw-cmn:1.4 no tiene este sentido
+  i34961: ["zh"]   # COPY: omw-cmn no enlaza este ILI
+  i30414: ["zh"]   # COPY: omw-cmn no enlaza este ILI
+
+declared_passthrough: {}
+
+corpus:
+  - text: 复制文件
+    label: ["COPY", "i36225"]
+  - text: 删除文件
+    label: ["REMOVE", "i36225"]
+  - text: 移动文件
+    label: ["MOVE", "i36225"]

@@ -1,0 +1,29 @@
+# Spanish — IE/Romance, fusional, latin
+# Tokenization: simplemma (same as English)
+# Verb reconstruction: ES imperative list (copia→copiar, borra→borrar, etc.)
+code: es
+name: Español
+family: Indo-European/Romance
+script: latin
+
+wordnet:
+  package: omw-es:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: es_imperative
+
+declared_gaps: {}
+
+declared_passthrough:
+  i50132: ["es"]   # archivo: OMW-es tiene solo "archivo" como lema
+  i71104: ["es"]   # archivo (sentido 2): OMW-es tiene solo "archivo" como lema
+
+corpus:
+  - text: copia el archivo
+    label: ["COPY", "i50132"]
+  - text: borra el archivo
+    label: ["REMOVE", "i50132"]
+  - text: mueve el archivo
+    label: ["MOVE", "i50132"]

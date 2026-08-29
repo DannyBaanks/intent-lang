@@ -1,0 +1,28 @@
+# Finnish — Uralic, agglutinative (15 cases), no Indo-European roots
+# Tokenization: simplemma (native Finnish support, stable lemmas)
+# Verb reconstruction: none
+# Full OMW coverage — only non-IE language with 13/13 concept coverage
+code: fi
+name: Suomi
+family: Uralic/Finnic
+script: latin
+
+wordnet:
+  package: omw-fi:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: kopioi tiedosto
+    label: ["COPY", "i70672"]
+  - text: poista tiedosto
+    label: ["REMOVE", "i70672"]
+  - text: siirrä tiedosto
+    label: ["MOVE", "i70672"]

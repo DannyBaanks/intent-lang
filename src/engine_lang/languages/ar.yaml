@@ -1,0 +1,31 @@
+# Arabic — Afroasiatic/Semitic, root-and-pattern morphology, RTL
+# Tokenization: simplemma (root-and-pattern, partial lemma coverage)
+# Verb reconstruction: none (root k-t-b → يكتب/كاتب/مكتبة is root-and-pattern)
+# Coverage gaps are honest and measured
+code: ar
+name: العربية
+family: Afroasiatic/Semitic
+script: arabic (RTL)
+
+wordnet:
+  package: omw-arb:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps:
+  i34961: ["zh", "ja", "ar"]   # COPY: omw-cmn/ja/arb no enlazan este ILI
+  i30414: ["zh", "ja", "ar"]   # COPY: omw-cmn/ja/arb no enlazan este ILI
+  i34510: ["ar"]   # RUN: omw-arb no tiene sentido directo para run/ejecutar
+
+declared_passthrough: {}
+
+corpus:
+  - text: نسخ الملف
+    label: ["COPY", "i70665"]
+  - text: احذف الملف
+    label: ["REMOVE", "i70665"]
+  - text: حرك الملف
+    label: ["MOVE", "i70665"]

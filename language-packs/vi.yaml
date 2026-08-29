@@ -1,0 +1,27 @@
+# Vietnamese — Austroasiatic, tonal, isolating, latin script with diacritics
+# Tokenization: simplemma (if supported) or custom
+# Verb reconstruction: none (isolating)
+code: vi
+name: Tiếng Việt
+family: Austroasiatic/Vietic
+script: latin (with diacritics)
+
+wordnet:
+  package: omw-vi:1.4
+
+tokenizer:
+  strategy: simplemma
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: sao chép tập tin
+    label: ["COPY", "i70665"]
+  - text: xóa tập tin
+    label: ["REMOVE", "i70665"]
+  - text: di chuyển tập tin
+    label: ["MOVE", "i70665"]

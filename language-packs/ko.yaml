@@ -1,0 +1,27 @@
+# Korean — Koreanic, agglutinative, hangul script
+# Tokenization: kiwipiepy (morphological analyzer)
+# Verb reconstruction: none (agglutinative)
+code: ko
+name: 한국어
+family: Koreanic
+script: hangul
+
+wordnet:
+  package: omw-ko:1.4
+
+tokenizer:
+  strategy: kiwi
+
+verb_strategy: none
+
+declared_gaps: {}
+
+declared_passthrough: {}
+
+corpus:
+  - text: 파일을 복사하다
+    label: ["COPY", "i70665"]
+  - text: 파일을 삭제하다
+    label: ["REMOVE", "i70665"]
+  - text: 파일을 이동하다
+    label: ["MOVE", "i70665"]
