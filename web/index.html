@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>intent-lang | semantic console</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="desktop-shell">
+    <header class="titlebar">
+      <div class="brand-mark" aria-hidden="true">i/</div>
+      <div class="window-title">intent-lang <span>semantic console</span></div>
+      <div class="window-controls" aria-hidden="true"><b>_</b><b>□</b><b>×</b></div>
+    </header>
+
+    <nav class="menubar" aria-label="Menú">
+      <button type="button">Archivo</button>
+      <button type="button">Edición</button>
+      <button type="button">Ver</button>
+      <button type="button">Ayuda</button>
+      <span class="menu-spacer"></span>
+      <span id="machine-status" class="machine-status"><i></i> STATIC / DEMO</span>
+    </nav>
+
+    <section class="intro-strip">
+      <div>
+        <span class="eyebrow">INTERFAZ DE RESOLUCIÓN</span>
+        <h1>Escribe una intención.<br><strong>Comprueba qué entendió.</strong></h1>
+      </div>
+      <div class="intro-note">
+        <span class="note-label">SISTEMA</span>
+        <code>lexicon → Intent IR → round-trip</code>
+        <span>La ambigüedad no se ejecuta.</span>
+      </div>
+    </section>
+
+    <section class="translator" aria-label="Resolver intención">
+      <div class="language-row">
+        <label for="language">Idioma de entrada</label>
+        <select id="language">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="ar">العربية</option>
+          <option value="fi">Suomi</option>
+          <option value="he">עברית</option>
+          <option value="tr">Türkçe</option>
+        </select>
+        <button id="swap" class="flat-button" type="button" title="Cambiar ejemplo">⇄</button>
+        <span class="target-label">salida: <b>Intent IR</b></span>
+      </div>
+
+      <div class="box-grid">
+        <section class="input-card panel">
+          <div class="panel-heading">
+            <span>Entrada humana</span>
+            <span class="panel-code">01 / TEXT</span>
+          </div>
+          <textarea id="source" spellcheck="false" placeholder="Escribe una instrucción..."></textarea>
+          <div class="panel-footer">
+            <span id="char-count">0 caracteres</span>
+            <button id="clear" class="text-button" type="button">Limpiar</button>
+          </div>
+        </section>
+
+        <div class="transfer-mark" aria-hidden="true">&gt;&gt;</div>
+
+        <section class="output-card panel">
+          <div class="panel-heading">
+            <span>Interpretación</span>
+            <span id="result-state" class="state-badge idle">EN ESPERA</span>
+          </div>
+          <div id="output" class="output-area" aria-live="polite">
+            <div class="empty-state">
+              <span class="empty-glyph">[ _ ]</span>
+              <p>El resultado aparecerá aquí.</p>
+              <small>La salida muestra el IR y el round-trip.</small>
+            </div>
+          </div>
+          <div class="panel-footer output-footer">
+            <span id="roundtrip-label">round-trip: —</span>
+            <button id="copy" class="text-button" type="button" disabled>Copiar IR</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="action-row">
+        <div class="hint"><kbd>Enter</kbd> resolver <span>·</span> <kbd>Shift</kbd> + <kbd>Enter</kbd> nueva línea</div>
+        <button id="resolve" class="resolve-button" type="button"><span>Resolver intención</span><b>↵</b></button>
+      </div>
+    </section>
+
+    <section class="trace-panel panel">
+      <div class="panel-heading">
+        <span>Traza de verificación</span>
+        <span class="panel-code">READ ONLY</span>
+      </div>
+      <div id="trace" class="trace-lines">
+        <div><span class="trace-time">--:--:--</span><span class="trace-muted">esperando entrada</span></div>
+        <div><span class="trace-time">--:--:--</span><span class="trace-muted">no se ejecutan capabilities desde esta pantalla</span></div>
+      </div>
+    </section>
+
+    <footer class="statusbar">
+      <span><i class="status-dot"></i> listo</span>
+      <span>resolver local</span>
+      <span>intent IR / 1.0</span>
+      <span class="status-grow"></span>
+      <span>sin efectos laterales</span>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

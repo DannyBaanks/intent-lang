@@ -16,6 +16,30 @@ py -m intentlang judge "agrégale cuerpo" --lang es  # -> judgments.jsonl
 py -m intentlang execute "copia el archivo" --lang es   # resolve + lower -> Program IR
 ```
 
+## Interfaz web
+
+La consola web muestra la entrada humana y el `Intent IR` en dos paneles. La
+publicación de GitHub Pages y Docker es una demo estática; no ejecuta
+capabilities ni resuelve texto arbitrario sin el servidor Python local.
+
+```powershell
+py web/server.py
+```
+
+Abre `http://127.0.0.1:8765`.
+
+Para levantar la demo estática con Docker:
+
+```powershell
+docker compose up -d
+```
+
+Abre `http://127.0.0.1:8080`.
+
+La demo publicada por GitHub Pages estará en
+`https://dannybaanks.github.io/intent-lang/` después de ejecutar el workflow de
+publicación.
+
 ## La Idea
 
 Es más fácil pensar en el idioma que ya dominas que en uno aprendido. Casi todos los lenguajes de programación tienen keywords en inglés, y esa es una capa de fricción entre humano y máquina que nadie eligió.
