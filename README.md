@@ -16,80 +16,6 @@ py -m intentlang judge "agrégale cuerpo" --lang es  # -> judgments.jsonl
 py -m intentlang execute "copia el archivo" --lang es   # resolve + lower -> Program IR
 ```
 
-El backend COBOL genera fuente compatible con GnuCOBOL para `WRITE`, `READ`,
-`RUN`, `COPY`, `MOVE` y `DELETE`. También cubre secuencias, `IF/ELSE`,
-`FOREACH` sobre listas literales, `TRY`, `RETURN`, funciones estructuradas y
-transacciones con rutas explícitas. Las capabilities fuera de esta lista se
-mantienen como hooks no habilitados. La compilación requiere `cobc` instalado.
-
-`verify_cobol_round_trip` recupera capabilities e inputs literales de programas
-lineales generados y los compara con el `Program IR` original. Antes de aceptar
-el resultado valida los inputs contra los contratos registrados. Si encuentra
-una mutación, una sentencia extra o una construcción que no reconoce, devuelve
-rechazo o `NOT_SUPPORTED`.
-
-En `READ`, el renderer declara un registro variable con un buffer máximo de
-`8192` bytes y obtiene la longitud mediante `WS-INPUT-SIZE`. El límite de la
-capability es `4096` bytes. El test correspondiente usa un registro de `4097`
-bytes y comprueba que el ejecutable termina con código `99` sin procesarlo.
-Esta comprobación corresponde a ese layout; otros layouts COBOL necesitan
-pruebas específicas.
-
-## Instalación autónoma
-
-Requisito: Python 3.12 o posterior.
-
-### Windows
-
-```powershell
-py -3.12 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-cobc --version
-.\.venv\Scripts\python.exe -m pytest -q
-ruff check src/ tests/
-mypy src/intentlang --ignore-missing-imports
-```
-
-Instala GnuCOBOL mediante una distribución pública de MSYS2 y añade su
-directorio `bin` al `PATH` antes de ejecutar `cobc --version`. Intent Lang no
-descarga ni contiene el compilador.
-
-### Linux
-
-```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -e '.[dev]'
-sudo apt update
-sudo apt install gnucobol
-cobc --version
-.venv/bin/python -m pytest -q
-ruff check src/ tests/
-mypy src/intentlang --ignore-missing-imports
-```
-
-En Fedora usa `sudo dnf install gnucobol`; en Arch usa `sudo pacman -S
-gnucobol`. Intent Lang no descarga ni contiene el compilador.
-
-Para validar generación COBOL, crea un `Program IR`, genera la fuente con
-`generate_program_source(program, "cobol")`, compílala con `cobc -x` y ejecuta
-el binario resultante. Las capabilities que siguen siendo hooks no deben
-describirse como verificadas.
-
-## Estado medido (2026-08-28)
-
-| métrica | valor | nota |
-|---|---|---|
-| separación | **100%** | invariante que rompe el build, cero colisiones entre casos RESOLVED etiquetados |
-| determinismo (strict) | igualdad de objeto mismo-proceso | byte-idéntico cross-process **NOT_DEMONSTRATED** |
-| convergencia | **0/3 grupos (0%)** | medido por la suite actual, reportado, no disfrazado — ver abajo |
-| fix cobertura verbo | `duplicar` → COPY | i34961/i30414 verificado contra omw-es+en |
-| round-trip idioma objetivo completo | **NOT_DEMONSTRATED** | mensajes de envoltorio (Entendí/¿Correcto?) siguen en español; relexicalización de concepto funciona |
-| caché firmado asistido | **IMPLEMENTED (API)** | caché persistente local con `evidence_sha256` y firma SHA-256; `get_or_compute` conserva una IR mínima de la propuesta |
-
-**Por qué 0% convergencia es honesto:** en omw-*:1.4, `archivo`(es), `file`(en) y `文件`(zh) no comparten **ningún** ILI (es tiene i50132/i71104 = sentidos *archive*; el ILI de archivo-informático i70665 existe solo en en/zh). La suite documenta esto como gap léxico conocido — arreglarlo requiere un wordnet español mejor o una tabla de dominio explícita, no adivinanza silenciosa.
-
----
-
 ## La Idea
 
 Es más fácil pensar en el idioma que ya dominas que en uno aprendido. Casi todos los lenguajes de programación tienen keywords en inglés, y esa es una capa de fricción entre humano y máquina que nadie eligió.
@@ -255,6 +181,84 @@ discover(surface, lang, test_cases)
 # -> Candidate(...) si un candidato existe y pasa sus casos de prueba
 ```
 
+## COBOL
+
+El backend COBOL genera fuente compatible con GnuCOBOL para `WRITE`, `READ`,
+`RUN`, `COPY`, `MOVE` y `DELETE`. También cubre secuencias, `IF/ELSE`,
+`FOREACH` sobre listas literales, `TRY`, `RETURN`, funciones estructuradas y
+transacciones con rutas explícitas. Las capabilities fuera de esta lista se
+mantienen como hooks no habilitados. La compilación requiere `cobc` instalado.
+
+`verify_cobol_round_trip` recupera capabilities e inputs literales de programas
+lineales generados y los compara con el `Program IR` original. Antes de aceptar
+el resultado valida los inputs contra los contratos registrados. Si encuentra
+una mutación, una sentencia extra o una construcción que no reconoce, devuelve
+rechazo o `NOT_SUPPORTED`.
+
+En `READ`, el renderer declara un registro variable con un buffer máximo de
+`8192` bytes y obtiene la longitud mediante `WS-INPUT-SIZE`. El límite de la
+capability es `4096` bytes. El test correspondiente usa un registro de `4097`
+bytes y comprueba que el ejecutable termina con código `99` sin procesarlo.
+Esta comprobación corresponde a ese layout; otros layouts COBOL necesitan
+pruebas específicas.
+
+## Instalación autónoma
+
+Requisito: Python 3.12 o posterior.
+
+### Windows
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+cobc --version
+.\.venv\Scripts\python.exe -m pytest -q
+ruff check src/ tests/
+mypy src/intentlang --ignore-missing-imports
+```
+
+Instala GnuCOBOL mediante una distribución pública de MSYS2 y añade su
+directorio `bin` al `PATH` antes de ejecutar `cobc --version`. Intent Lang no
+descarga ni contiene el compilador.
+
+### Linux
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+sudo apt update
+sudo apt install gnucobol
+cobc --version
+.venv/bin/python -m pytest -q
+ruff check src/ tests/
+mypy src/intentlang --ignore-missing-imports
+```
+
+En Fedora usa `sudo dnf install gnucobol`; en Arch usa `sudo pacman -S
+gnucobol`. Intent Lang no descarga ni contiene el compilador.
+
+Para validar generación COBOL, crea un `Program IR`, genera la fuente con
+`generate_program_source(program, "cobol")`, compílala con `cobc -x` y ejecuta
+el binario resultante. Las capabilities que siguen siendo hooks no deben
+describirse como verificadas.
+
+## Estado medido (2026-08-28)
+
+| métrica | valor | nota |
+|---|---|---|
+| separación | **100%** | invariante que rompe el build, cero colisiones entre casos RESOLVED etiquetados |
+| determinismo (strict) | igualdad de objeto mismo-proceso | byte-idéntico cross-process **NOT_DEMONSTRATED** |
+| convergencia | **0/3 grupos (0%)** | medido por la suite actual, reportado, no disfrazado — ver abajo |
+| fix cobertura verbo | `duplicar` → COPY | i34961/i30414 verificado contra omw-es+en |
+| round-trip idioma objetivo completo | **NOT_DEMONSTRATED** | mensajes de envoltorio (Entendí/¿Correcto?) siguen en español; relexicalización de concepto funciona |
+| caché firmado asistido | **IMPLEMENTED (API)** | caché persistente local con `evidence_sha256` y firma SHA-256; `get_or_compute` conserva una IR mínima de la propuesta |
+
+**Por qué 0% convergencia es honesto:** en omw-*:1.4, `archivo`(es), `file`(en) y `文件`(zh) no comparten **ningún** ILI (es tiene i50132/i71104 = sentidos *archive*; el ILI de archivo-informático i70665 existe solo en en/zh). La suite documenta esto como gap léxico conocido — arreglarlo requiere un wordnet español mejor o una tabla de dominio explícita, no adivinanza silenciosa.
+
+## Licencia
+
+MIT.
+
 ## Genealogía
 
 Viene de [JAJAJA](https://github.com/DannyBaanks/JAJAJA), un esolang cuyo alfabeto son repeticiones de `ja`.
@@ -267,7 +271,3 @@ intent-lang  representación humana    →  mismo contrato
 Uno pregunta *"¿puedo ejecutar aunque la representación sea ridícula?"*. El otro pregunta *"¿puedo ejecutar sin obligar al humano a aprender una representación artificial?"*. Mismo experimento, extremos opuestos.
 
 *(The repo name is in English and the design in Spanish. Consistent with the thesis: the surface is not the semantics.)*
-
-## Licencia
-
-MIT.
